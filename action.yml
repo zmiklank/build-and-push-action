@@ -69,15 +69,7 @@ runs:
         ver="${{ inputs.version }}"
         echo "::set-output name=SHORT_VER::${ver//./}"
 
-    - name: Check if .exclude-${{ inputs.tag }} is present in version directory
-      id: check_exclude_file
-      # https://github.com/marketplace/actions/file-existence
-      uses: andstor/file-existence-action@v1
-      with:
-        files: "${{ inputs.version }}/.exclude-${{ inputs.tag }}"
-
     - name: Login to registry
-      if: steps.check_exclude_file.outputs.files_exists == 'false'
       uses: redhat-actions/podman-login@v1
       with:
         registry: ${{ inputs.registry }}
@@ -85,12 +77,19 @@ runs:
         password: ${{ inputs.registry_token }}
 
     - name: Install distgen and generate source
-      if: ${{ inputs.use_distgen }} == 'true' && steps.check_exclude_file.outputs.files_exists == 'false'
+      if: ${{ inputs.use_distgen }} == 'true'
       shell: bash
       run: |
         sudo apt-get update -y && sudo apt-get install -y python3 python3-pip
         pip3 -v install distgen
         DG=$HOME/.local/bin/dg make generate-all
+
+    - name: Check if .exclude-${{ inputs.tag }} is present in version directory
+      id: check_exclude_file
+      # https://github.com/marketplace/actions/file-existence
+      uses: andstor/file-existence-action@v1
+      with:
+        files: "${{ inputs.version }}/.exclude-${{ inputs.tag }}"
 
     - name: Check if ${{ inputs.dockerfile }} is present in version directory
       if: steps.check_exclude_file.outputs.files_exists == 'false'
