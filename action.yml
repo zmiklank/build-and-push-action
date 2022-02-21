@@ -118,7 +118,7 @@ runs:
       with:
         image: ${{ steps.build-image.outputs.image }}
         tags: ${{ steps.build-image.outputs.tags }}
-        registry: quay.io/${{ inputs.registry_namespace }}
+        registry: ${{ inputs.registry }}/${{ inputs.registry_namespace }}
         username: ${{ inputs.registry_username }}
         password: ${{ inputs.registry_token }}
 
