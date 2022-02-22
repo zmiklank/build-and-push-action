@@ -13,13 +13,13 @@
 
 ### Build information
 
-| Input Name       | Description                                                     | Default value |
-|------------------|-----------------------------------------------------------------|---------------|
-| `version `       | Version of the built image.                                     | **required**  |
-| `tag`            | Tag of the built image.                                         | **required**  |
-| `dockerfile`     | Dockerfile to build the image.                                  | Dockerfile    |
-| `use_distgen`    | The action will use distgen for generating dockerfiles if true. | false         |
-| `docker_context' | Docker build context.                                           | .             |
+| Input Name       | Description                                                         | Default value |
+|------------------|---------------------------------------------------------------------|---------------|
+| `version `       | Version of the primary application contained in the container image. It is also used as a relative path to a specified `dockerfile` in the container's repository. | **required**  |
+| `tag`            | Tag of the built image.                                             | **required**  |
+| `dockerfile`     | Dockerfile to build the image.                                      | Dockerfile    |
+| `use_distgen`    | The action will use distgen for generating dockerfiles if true.     | false         |
+| `docker_context' | Docker build context.                                               | .             |
 
 
 

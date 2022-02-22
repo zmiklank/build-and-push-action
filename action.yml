@@ -19,7 +19,7 @@ inputs:
     description: 'Token to access the specified registry'
     required: true
   version:
-    description: 'Version of the built image'
+    description: 'Version of the primary application contained in the container image'
     required: true
   tag:
     description: 'Tag of the built image'
