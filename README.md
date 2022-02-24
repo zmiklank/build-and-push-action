@@ -19,7 +19,7 @@
 | `tag`            | Tag of the built image.                                             | **required**  |
 | `dockerfile`     | Dockerfile to build the image.                                      | Dockerfile    |
 | `use_distgen`    | The action will use distgen for generating dockerfiles if true.     | false         |
-| `docker_context' | Docker build context.                                               | .             |
+| `docker_context` | Docker build context.                                               | .             |
 
 
 
