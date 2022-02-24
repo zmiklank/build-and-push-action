@@ -15,9 +15,9 @@
 
 | Input Name       | Description                                                         | Default value |
 |------------------|---------------------------------------------------------------------|---------------|
-| `version `       | Version of the primary application contained in the container image. It is also used as a relative path to a specified `dockerfile` in the container's repository. | **required**  |
 | `tag`            | Tag of the built image.                                             | **required**  |
 | `dockerfile`     | Dockerfile to build the image.                                      | Dockerfile    |
+| `dockerfile_path`| Path to a Dockerfile, relative to the fetched git repository root.  | **required**  |
 | `use_distgen`    | The action will use distgen for generating dockerfiles if true.     | false         |
 | `docker_context` | Docker build context.                                               | .             |
 
@@ -46,6 +46,6 @@ jobs:
           registry_username: ${{ secrets.REGISTRY_LOGIN }}
           registry_token: ${{ secrets.REGISTRY_TOKEN }}
           dockerfile: "Dockerfile"
-          version: 1
+          dockerfile_path: "1.0"
           tag: fedora
 ```
