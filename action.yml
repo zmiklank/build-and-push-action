@@ -18,9 +18,6 @@ inputs:
   registry_token:
     description: 'Token to access the specified registry'
     required: true
-  version:
-    description: 'Version of the primary application contained in the container image'
-    required: true
   tag:
     description: 'Tag of the built image'
     required: true
@@ -28,6 +25,9 @@ inputs:
     description: 'Dockerfile to build the image'
     required: false
     default: 'Dockerfile'
+  dockerfile_path:
+    description: 'Path to a Dockerfile, relative to the fetched git repository root'
+    required: true
   docker_context:
     description: 'Docker build context'
     required: false
@@ -62,13 +62,6 @@ runs:
         BASE_IMAGE_ROW=${row/BASE_IMAGE_NAME = /}
         echo ::set-output name=image_name::$BASE_IMAGE_ROW
 
-    - name: Get short version
-      id: short_version
-      shell: bash
-      run: |
-        ver="${{ inputs.version }}"
-        echo "::set-output name=SHORT_VER::${ver//./}"
-
     - name: Login to registry
       uses: redhat-actions/podman-login@v1
       with:
@@ -84,21 +77,28 @@ runs:
         pip3 -v install distgen
         DG=$HOME/.local/bin/dg make generate-all
 
-    - name: Check if .exclude-${{ inputs.tag }} is present in version directory
+    - name: Check if .exclude-${{ inputs.tag }} is present in ${{ inputs.dockerfile_path }} directory
       id: check_exclude_file
       # https://github.com/marketplace/actions/file-existence
       uses: andstor/file-existence-action@v1
       with:
-        files: "${{ inputs.version }}/.exclude-${{ inputs.tag }}"
+        files: "${{ inputs.dockerfile_path }}/.exclude-${{ inputs.tag }}"
 
-    - name: Check if ${{ inputs.dockerfile }} is present in version directory
+    - name: Check if ${{ inputs.dockerfile }} is present in ${{ inputs.dockerfile_path }} directory
       if: steps.check_exclude_file.outputs.files_exists == 'false'
       id: check_dockerfile_file
       # https://github.com/marketplace/actions/file-existence
       uses: andstor/file-existence-action@v1
       with:
-        files: "${{ inputs.version }}/${{ inputs.dockerfile }}"
+        files: "${{ inputs.dockerfile_path }}/${{ inputs.dockerfile }}"
         allow_failure: true # fails the Action if Dockerfile is missing
+
+    - name: Get cleaned path to Dockerfile
+      id: clean_path
+      shell: bash
+      run: |
+        tmp="${{ inputs.dockerfile_path }}"
+        echo "::set-output name=clean_dockerfile_path::${tmp//./}"
 
     - name: Build image
       if: steps.check_exclude_file.outputs.files_exists == 'false'
@@ -106,8 +106,8 @@ runs:
       # https://github.com/marketplace/actions/buildah-build
       uses: redhat-actions/buildah-build@v2
       with:
-        dockerfiles: ${{ inputs.version }}/${{ inputs.dockerfile }}
-        image: ${{ steps.base-image-name.outputs.image_name}}-${{ steps.short_version.outputs.SHORT_VER }}-${{ inputs.tag }}
+        dockerfiles: ${{ inputs.dockerfile_path }}/${{ inputs.dockerfile }}
+        image: ${{ steps.base-image-name.outputs.image_name}}-${{ steps.clean_path.outputs.clean_dockerfile_path }}-${{ inputs.tag }}
         context: ${{ inputs.docker_context }}
         tags: latest ${{ inputs.tag }} ${{ github.sha }}
 
