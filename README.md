@@ -42,10 +42,10 @@ jobs:
         uses: sclorg/build-and-push-action@v1
         with:
           registry: "quay.io"
-          registry_namespace: "sclorg"
+          registry_namespace: "namespace"
           registry_username: ${{ secrets.REGISTRY_LOGIN }}
           registry_token: ${{ secrets.REGISTRY_TOKEN }}
           dockerfile: "Dockerfile"
           dockerfile_path: "1.0"
-          tag: fedora
+          tag: "tag"
 ```
