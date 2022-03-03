@@ -70,7 +70,7 @@ runs:
         password: ${{ inputs.registry_token }}
 
     - name: Install distgen and generate source
-      if: ${{ inputs.use_distgen }} == 'true'
+      if: ${{ inputs.use_distgen == 'true' }}
       shell: bash
       run: |
         sudo apt-get update -y && sudo apt-get install -y python3 python3-pip
