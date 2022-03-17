@@ -40,13 +40,6 @@ inputs:
 runs:
   using: "composite"
   steps:
-    - name: Check if Action is run from sclorg repository
-      if: github.repository_owner != 'sclorg'
-      shell: bash
-      run: |
-        echo "This action can be run only for sclorg repositories"
-        exit 1
-
     - name: Checkout git
       uses: actions/checkout@v2
       with:
