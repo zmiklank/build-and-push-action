@@ -62,6 +62,11 @@ runs:
         username: ${{ inputs.registry_username }}
         password: ${{ inputs.registry_token }}
 
+    - name: Set the current date as a step variable
+      shell: bash
+      id: date_tag
+      run: echo "::set-output name=tag::$(date +'%Y%m%d')"
+
     - name: Install distgen and generate source
       if: ${{ inputs.use_distgen == 'true' }}
       shell: bash
@@ -102,7 +107,7 @@ runs:
         dockerfiles: ${{ inputs.dockerfile_path }}/${{ inputs.dockerfile }}
         image: ${{ steps.base-image-name.outputs.image_name}}-${{ steps.clean_path.outputs.clean_dockerfile_path }}-${{ inputs.tag }}
         context: ${{ inputs.docker_context }}
-        tags: latest ${{ inputs.tag }} ${{ github.sha }}
+        tags: latest ${{ inputs.tag }} ${{ steps.date_tag.outputs.tag }} ${{ github.sha }}
 
     - name: Push image to Quay.io/${{ inputs.registry_namespace }} namespace
       if: steps.check_exclude_file.outputs.files_exists == 'false'
