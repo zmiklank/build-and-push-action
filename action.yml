@@ -62,7 +62,7 @@ runs:
         username: ${{ inputs.registry_username }}
         password: ${{ inputs.registry_token }}
 
-    - name: Set current date as env variable
+    - name: Set the current date as a step variable
       shell: bash
       id: date_tag
       run: echo "::set-output name=tag::$(date +'%Y%m%d')"
