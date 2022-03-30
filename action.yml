@@ -36,6 +36,10 @@ inputs:
     description: 'The action will use distgen for generating dockerfiles if true'
     required: false
     default: 'false'
+  suffix:
+    description: 'Suffix name to image name'
+    required: false
+    default: ''
 
 runs:
   using: "composite"
@@ -75,12 +79,23 @@ runs:
         pip3 -v install distgen
         DG=$HOME/.local/bin/dg make generate-all
 
-    - name: Check if .exclude-${{ inputs.tag }} is present in ${{ inputs.dockerfile_path }} directory
+    - name: Get suffix from ${{ inputs.dockerfile }}
+      id: df_suffix
+      shell: bash
+      run: |
+        if [ ${{ inputs.dockerfile }} == Dockerfile ]; then
+          suffix='centos7'
+        else
+          suffix=${inputs.dockerfile##*.}
+        fi
+        echo "::set-output name=suffix::$suffix"
+
+    - name: Check if .exclude-${{ steps.df_suffix.outputs.suffix }} is present in ${{ inputs.dockerfile_path }} directory
       id: check_exclude_file
       # https://github.com/marketplace/actions/file-existence
       uses: andstor/file-existence-action@v1
       with:
-        files: "${{ inputs.dockerfile_path }}/.exclude-${{ inputs.tag }}"
+        files: "${{ inputs.dockerfile_path }}/.exclude-${{ steps.df_suffix.outputs.suffix }}"
 
     - name: Check if ${{ inputs.dockerfile }} is present in ${{ inputs.dockerfile_path }} directory
       if: steps.check_exclude_file.outputs.files_exists == 'false'
@@ -98,6 +113,16 @@ runs:
         tmp="${{ inputs.dockerfile_path }}"
         echo "::set-output name=clean_dockerfile_path::${tmp//./}"
 
+    - name: Suffix in image name
+      id: suffix_name
+      shell: bash
+      run: |
+        suffix_name=""
+        if [ x"${{ inputs.suffix }}" != "x" ]; then
+          suffix_name="-${{ inputs.suffix }}"
+        fi
+        echo "::set-output name=suffix::$suffix_name"
+
     - name: Build image
       if: steps.check_exclude_file.outputs.files_exists == 'false'
       id: build-image
@@ -105,7 +130,7 @@ runs:
       uses: redhat-actions/buildah-build@v2
       with:
         dockerfiles: ${{ inputs.dockerfile_path }}/${{ inputs.dockerfile }}
-        image: ${{ steps.base-image-name.outputs.image_name}}-${{ steps.clean_path.outputs.clean_dockerfile_path }}-${{ inputs.tag }}
+        image: ${{ steps.base-image-name.outputs.image_name}}-${{ steps.clean_path.outputs.clean_dockerfile_path }}${{ steps.suffix_name.outputs.suffix }}
         context: ${{ inputs.docker_context }}
         tags: latest ${{ inputs.tag }} ${{ steps.date_tag.outputs.tag }} ${{ github.sha }}
 
