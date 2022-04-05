@@ -86,7 +86,8 @@ runs:
         if [ ${{ inputs.dockerfile }} == Dockerfile ]; then
           suffix='centos7'
         else
-          suffix=${inputs.dockerfile##*.}
+          df="${{ inputs.dockerfile }}"
+          suffix=${df##*.}
         fi
         echo "::set-output name=suffix::$suffix"
 
