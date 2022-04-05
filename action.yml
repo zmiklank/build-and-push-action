@@ -37,7 +37,7 @@ inputs:
     required: false
     default: 'false'
   suffix:
-    description: 'Suffix name to image name'
+    description: 'A suffix for the built image name'
     required: false
     default: ''
 
