@@ -1,6 +1,10 @@
 # The Build and Push GitHub Action
 
 The action builds a container image and pushes it to the specified registry.
+The path to upload the image is constructed from inputs as follows:
+```
+registry/registry_namespace/image_name
+```
 
 ## Action Inputs
 
@@ -17,12 +21,11 @@ The action builds a container image and pushes it to the specified registry.
 
 | Input Name | Description | Default value |
 |------------|-------------|---------------|
+| `image_name` | Name of the built image. | **required** |
 | `tag` | Tag of the built image. | **required** |
-| `dockerfile` | Dockerfile to build the image. | Dockerfile |
-| `dockerfile_path` | Path to a Dockerfile, relative to the fetched git repository root. | **required** |
+| `dockerfile` | Dockerfile and its relative path to build the image. | Dockerfile |
 | `use_distgen` | The action will use distgen for generating dockerfiles if true. | false |
 | `docker_context` | Docker build context. | . |
-| `suffix` | Paramater adds suffix as `-suffix` into image name | '' |
 
 
 
@@ -48,8 +51,7 @@ jobs:
           registry_namespace: "namespace"
           registry_username: ${{ secrets.REGISTRY_LOGIN }}
           registry_token: ${{ secrets.REGISTRY_TOKEN }}
-          dockerfile: "Dockerfile"
-          dockerfile_path: "1.0"
-          suffix: "suffix"
+          dockerfile: "1.20/Dockerfile"
+          image_name: "container_image-1.20"
           tag: "tag"
 ```
