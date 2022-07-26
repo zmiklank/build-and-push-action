@@ -12,6 +12,9 @@ inputs:
   registry_namespace:
     description: 'Namespace of the registry, where the image would be pushed'
     required: true
+  image_name:
+    description: 'How the resulting image will be named'
+    required: true
   registry_username:
     description: 'Login to specified registry'
     required: true
@@ -22,12 +25,9 @@ inputs:
     description: 'Tag of the built image'
     required: true
   dockerfile:
-    description: 'Dockerfile to build the image'
+    description: 'Dockerfile to build the image with a relative path'
     required: false
     default: 'Dockerfile'
-  dockerfile_path:
-    description: 'Path to a Dockerfile, relative to the fetched git repository root'
-    required: true
   docker_context:
     description: 'Docker build context'
     required: false
@@ -36,40 +36,33 @@ inputs:
     description: 'The action will use distgen for generating dockerfiles if true'
     required: false
     default: 'false'
-  suffix:
-    description: 'A suffix for the built image name'
-    required: false
-    default: ''
 
 runs:
   using: "composite"
   steps:
-    - name: Checkout git
-      uses: actions/checkout@v2
-      with:
-       submodules: true
-
-    - name: Get base image name
-      id: base-image-name
-      shell: bash
-      run: |
-        # This command returns row with BASE_IMAGE_NAME
-        row=$(grep "BASE_IMAGE_NAME" Makefile)
-        # Return only base image name
-        BASE_IMAGE_ROW=${row/BASE_IMAGE_NAME = /}
-        echo ::set-output name=image_name::$BASE_IMAGE_ROW
-
-    - name: Login to registry
+    - name: Login to registry - to fail in the beggining of action if creds are incorrect
       uses: redhat-actions/podman-login@v1
       with:
         registry: ${{ inputs.registry }}
         username: ${{ inputs.registry_username }}
         password: ${{ inputs.registry_token }}
 
-    - name: Set the current date as a step variable
+    - name: Checkout git
+      uses: actions/checkout@v2
+      with:
+       submodules: true
+
+    - name: Prepare needed variables
       shell: bash
-      id: date_tag
-      run: echo "::set-output name=tag::$(date +'%Y%m%d')"
+      id: vars
+      run: |
+        tmp="${{ inputs.dockerfile }}"
+        dockerfile="${tmp#*/}"
+        distribution="${dockerfile#*Dockerfile.}"
+        [[ -z "$distribution" ]] && distribution="centos7"
+        echo "::set-output name=cur_date::$(date +'%Y%m%d')"
+        echo "::set-output name=dockerfile_path::${tmp%/*}"
+        echo "::set-output name=distribution::${distribution}"
 
     - name: Install distgen and generate source
       if: ${{ inputs.use_distgen == 'true' }}
@@ -79,50 +72,24 @@ runs:
         pip3 -v install distgen
         DG=$HOME/.local/bin/dg make generate-all
 
-    - name: Get suffix from ${{ inputs.dockerfile }}
-      id: df_suffix
-      shell: bash
-      run: |
-        if [ ${{ inputs.dockerfile }} == Dockerfile ]; then
-          suffix='centos7'
-        else
-          df="${{ inputs.dockerfile }}"
-          suffix=${df##*.}
-        fi
-        echo "::set-output name=suffix::$suffix"
-
-    - name: Check if .exclude-${{ steps.df_suffix.outputs.suffix }} is present in ${{ inputs.dockerfile_path }} directory
+    # exclusion mechanism.
+    # when .exlude-<distribution> file in Dockerfile folder exists,
+    # the particular image would not be built
+    - name: Check if .exclude-${{ steps.vars.outputs.distribution }} is present in ${{ steps.vars.outputs.dockerfile_path }} directory
       id: check_exclude_file
       # https://github.com/marketplace/actions/file-existence
       uses: andstor/file-existence-action@v1
       with:
-        files: "${{ inputs.dockerfile_path }}/.exclude-${{ steps.df_suffix.outputs.suffix }}"
+        files: "${{ steps.vars.outputs.dockerfile_path }}/.exclude-${{ steps.vars.outputs.distribution }}"
 
-    - name: Check if ${{ inputs.dockerfile }} is present in ${{ inputs.dockerfile_path }} directory
+    - name: Check if ${{ inputs.dockerfile }} is present
       if: steps.check_exclude_file.outputs.files_exists == 'false'
       id: check_dockerfile_file
       # https://github.com/marketplace/actions/file-existence
       uses: andstor/file-existence-action@v1
       with:
-        files: "${{ inputs.dockerfile_path }}/${{ inputs.dockerfile }}"
+        files: "${{ inputs.dockerfile }}"
         allow_failure: true # fails the Action if Dockerfile is missing
-
-    - name: Get cleaned path to Dockerfile
-      id: clean_path
-      shell: bash
-      run: |
-        tmp="${{ inputs.dockerfile_path }}"
-        echo "::set-output name=clean_dockerfile_path::${tmp//./}"
-
-    - name: Suffix in image name
-      id: suffix_name
-      shell: bash
-      run: |
-        suffix_name=""
-        if [ x"${{ inputs.suffix }}" != "x" ]; then
-          suffix_name="-${{ inputs.suffix }}"
-        fi
-        echo "::set-output name=suffix::$suffix_name"
 
     - name: Build image
       if: steps.check_exclude_file.outputs.files_exists == 'false'
@@ -130,10 +97,10 @@ runs:
       # https://github.com/marketplace/actions/buildah-build
       uses: redhat-actions/buildah-build@v2
       with:
-        dockerfiles: ${{ inputs.dockerfile_path }}/${{ inputs.dockerfile }}
-        image: ${{ steps.base-image-name.outputs.image_name}}-${{ steps.clean_path.outputs.clean_dockerfile_path }}${{ steps.suffix_name.outputs.suffix }}
+        dockerfiles: ${{ inputs.dockerfile }}
+        image: ${{ inputs.image_name}}
         context: ${{ inputs.docker_context }}
-        tags: latest ${{ inputs.tag }} ${{ steps.date_tag.outputs.tag }} ${{ github.sha }}
+        tags: latest ${{ inputs.tag }} ${{ steps.vars.outputs.cur_date }} ${{ github.sha }}
 
     - name: Push image to Quay.io/${{ inputs.registry_namespace }} namespace
       if: steps.check_exclude_file.outputs.files_exists == 'false'
@@ -149,4 +116,4 @@ runs:
     - name: Print image url
       if: steps.check_exclude_file.outputs.files_exists == 'false'
       shell: bash
-      run: echo "Image pushed to ${{ steps.push-to-registry.outputs.registry-paths }}"
+      run: echo "Image ${{ inputs.image_name }} has been pushed to ${{ steps.push-to-registry.outputs.registry-paths }}."
