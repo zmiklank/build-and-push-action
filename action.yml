@@ -23,7 +23,8 @@ inputs:
     required: true
   tag:
     description: 'Tag of the built image'
-    required: true
+    required: false
+    default: ''
   dockerfile:
     description: 'Dockerfile to build the image with a relative path'
     required: false
