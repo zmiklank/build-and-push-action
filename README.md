@@ -22,7 +22,7 @@ registry/registry_namespace/image_name
 | Input Name | Description | Default value |
 |------------|-------------|---------------|
 | `image_name` | Name of the built image. | **required** |
-| `tag` | Tag of the built image. | **required** |
+| `tag` | Tag of the built image. | "" |
 | `dockerfile` | Dockerfile and its relative path to build the image. | Dockerfile |
 | `use_distgen` | The action will use distgen for generating dockerfiles if true. | false |
 | `docker_context` | Docker build context. | . |
