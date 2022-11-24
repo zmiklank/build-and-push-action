@@ -57,9 +57,9 @@ runs:
         dockerfile="${tmp#*/}"
         distribution="${dockerfile#*Dockerfile.}"
         [[ -z "$distribution" ]] && distribution="centos7"
-        echo "::set-output name=cur_date::$(date +'%Y%m%d')"
-        echo "::set-output name=dockerfile_path::${tmp%/*}"
-        echo "::set-output name=distribution::${distribution}"
+        echo "cur_date=$(date +'%Y%m%d')" >> "$GITHUB_OUTPUT"
+        echo "dockerfile_path=${tmp%/*}" >> "$GITHUB_OUTPUT"
+        echo "distribution=${distribution}" >> "$GITHUB_OUTPUT"
 
     # exclusion mechanism.
     # when .exlude-<distribution> file in Dockerfile folder exists,
