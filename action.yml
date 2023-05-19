@@ -25,6 +25,10 @@ inputs:
     description: 'Tag of the built image'
     required: false
     default: ''
+  archs:
+    description: 'Label the image with this architecture. For multiple architectures, seperate them by a comma'
+    required: false
+    default: "amd64"
   dockerfile:
     description: 'Dockerfile to build the image with a relative path'
     required: false
@@ -79,6 +83,11 @@ runs:
       with:
         files: "${{ inputs.dockerfile }}"
         allow_failure: true # fails the Action if Dockerfile is missing
+        
+
+    - name: Set up QEMU
+      if: inputs.archs != 'amd64'
+      uses: docker/setup-qemu-action@v2
 
     - name: Build image
       if: steps.check_exclude_file.outputs.files_exists == 'false'
@@ -88,13 +97,14 @@ runs:
       with:
         dockerfiles: ${{ inputs.dockerfile }}
         image: ${{ inputs.image_name}}
+        archs: ${{ inputs.archs }}
         context: ${{ inputs.docker_context }}
         tags: latest ${{ inputs.tag }} ${{ steps.vars.outputs.cur_date }} ${{ github.sha }}
 
     - name: Push image to Quay.io/${{ inputs.registry_namespace }} namespace
       if: steps.check_exclude_file.outputs.files_exists == 'false'
       id: push-to-registry
-      uses: redhat-actions/push-to-registry@v2.2
+      uses: redhat-actions/push-to-registry@v2
       with:
         image: ${{ steps.build-image.outputs.image }}
         tags: ${{ steps.build-image.outputs.tags }}
