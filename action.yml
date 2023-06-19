@@ -60,7 +60,8 @@ runs:
         tmp="${{ inputs.dockerfile }}"
         dockerfile="${tmp#*/}"
         distribution="${dockerfile#*Dockerfile.}"
-        [[ -z "$distribution" ]] && distribution="centos7"
+        # if the Dockerfile name does not have dist. suffix we use CentOS7
+        [[ "$distribution" == Dockerfile ]] && distribution="centos7"
         echo "cur_date=$(date +'%Y%m%d')" >> "$GITHUB_OUTPUT"
         echo "dockerfile_path=${tmp%/*}" >> "$GITHUB_OUTPUT"
         echo "distribution=${distribution}" >> "$GITHUB_OUTPUT"
