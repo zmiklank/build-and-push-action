@@ -72,7 +72,7 @@ runs:
     - name: Check if .exclude-${{ steps.vars.outputs.distribution }} is present in ${{ steps.vars.outputs.dockerfile_path }} directory
       id: check_exclude_file
       # https://github.com/marketplace/actions/file-existence
-      uses: andstor/file-existence-action@v1
+      uses: andstor/file-existence-action@v2
       with:
         files: "${{ steps.vars.outputs.dockerfile_path }}/.exclude-${{ steps.vars.outputs.distribution }}"
 
@@ -80,11 +80,11 @@ runs:
       if: steps.check_exclude_file.outputs.files_exists == 'false'
       id: check_dockerfile_file
       # https://github.com/marketplace/actions/file-existence
-      uses: andstor/file-existence-action@v1
+      uses: andstor/file-existence-action@v2
       with:
         files: "${{ inputs.dockerfile }}"
-        allow_failure: true # fails the Action if Dockerfile is missing
-        
+        fail: true # fails the Action if Dockerfile is missing
+
 
     - name: Set up QEMU
       if: inputs.archs != 'amd64'
