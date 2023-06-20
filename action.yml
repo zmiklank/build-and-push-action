@@ -49,7 +49,7 @@ runs:
         password: ${{ inputs.registry_token }}
 
     - name: Checkout git
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
       with:
        submodules: true
 
