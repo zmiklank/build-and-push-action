@@ -23,6 +23,7 @@ registry/registry_namespace/image_name
 |------------|-------------|---------------|
 | `image_name` | Name of the built image. | **required** |
 | `tag` | Tag of the built image. | "" |
+| `use_default_tags` | Add default tags to image - SHA, latest, current date | true |
 | `archs` | Label the image with this architecture. For multiple architectures, seperate them by a comma. | amd64 |
 | `dockerfile` | Dockerfile and its relative path to build the image. | Dockerfile |
 | `docker_context` | Docker build context. | . |
