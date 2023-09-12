@@ -37,6 +37,10 @@ inputs:
     description: 'Docker build context'
     required: false
     default: '.'
+  use_default_tags:
+    description: 'Tags built image with default tags - SHA, latest, current date'
+    required: false
+    default: 'true'
 
 runs:
   using: "composite"
@@ -85,6 +89,15 @@ runs:
         files: "${{ inputs.dockerfile }}"
         fail: true # fails the Action if Dockerfile is missing
 
+    - name: Prepare tags
+      shell: bash
+      id: tags
+      run: |
+        tags="${{ inputs.tag }}"
+        if [ ${{ inputs.use_default_tags }} == true ]; then
+          tags="$tags latest ${{ steps.vars.outputs.cur_date }} ${{ github.sha }}"
+        fi
+        echo "tags=$tags" >> "$GITHUB_OUTPUT"
 
     - name: Set up QEMU
       if: inputs.archs != 'amd64'
@@ -100,7 +113,7 @@ runs:
         image: ${{ inputs.image_name}}
         archs: ${{ inputs.archs }}
         context: ${{ inputs.docker_context }}
-        tags: latest ${{ inputs.tag }} ${{ steps.vars.outputs.cur_date }} ${{ github.sha }}
+        tags: ${{ steps.tags.outputs.tags }}
 
     - name: Push image to Quay.io/${{ inputs.registry_namespace }} namespace
       if: steps.check_exclude_file.outputs.files_exists == 'false'
