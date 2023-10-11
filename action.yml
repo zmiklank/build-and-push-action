@@ -101,7 +101,7 @@ runs:
 
     - name: Set up QEMU
       if: inputs.archs != 'amd64'
-      uses: docker/setup-qemu-action@v2
+      uses: docker/setup-qemu-action@v3
 
     - name: Build image
       if: steps.check_exclude_file.outputs.files_exists == 'false'
