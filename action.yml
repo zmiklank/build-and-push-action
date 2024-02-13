@@ -76,7 +76,7 @@ runs:
     - name: Check if .exclude-${{ steps.vars.outputs.distribution }} is present in ${{ steps.vars.outputs.dockerfile_path }} directory
       id: check_exclude_file
       # https://github.com/marketplace/actions/file-existence
-      uses: andstor/file-existence-action@v2
+      uses: andstor/file-existence-action@v3
       with:
         files: "${{ steps.vars.outputs.dockerfile_path }}/.exclude-${{ steps.vars.outputs.distribution }}"
 
@@ -84,7 +84,7 @@ runs:
       if: steps.check_exclude_file.outputs.files_exists == 'false'
       id: check_dockerfile_file
       # https://github.com/marketplace/actions/file-existence
-      uses: andstor/file-existence-action@v2
+      uses: andstor/file-existence-action@v3
       with:
         files: "${{ inputs.dockerfile }}"
         fail: true # fails the Action if Dockerfile is missing
