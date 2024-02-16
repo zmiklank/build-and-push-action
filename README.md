@@ -28,6 +28,13 @@ registry/registry_namespace/image_name
 | `dockerfile` | Dockerfile and its relative path to build the image. | Dockerfile |
 | `docker_context` | Docker build context. | . |
 
+### Other information
+
+| Input Name | Description | Default value |
+|------------|-------------|---------------|
+| `readme` | If path to readme is set, the readme is updated to the registry. Only quay.io is supported. | "" |
+| `quay_application_token` | Application token is used for updating description for image. | "" |
+
 
 
 ## Example
