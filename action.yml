@@ -41,6 +41,14 @@ inputs:
     description: 'Tags built image with default tags - SHA, latest, current date'
     required: false
     default: 'true'
+  readme:
+    description: 'If path to readme is set, the readme is updated to the registry. Only quay.io is supported.'
+    required: false
+    default: ''
+  quay_application_token:
+    description: 'Application token is used for updating description for images'
+    required: false
+    default: ''
 
 runs:
   using: "composite"
@@ -125,6 +133,16 @@ runs:
         registry: ${{ inputs.registry }}/${{ inputs.registry_namespace }}
         username: ${{ inputs.registry_username }}
         password: ${{ inputs.registry_token }}
+
+    - name: Upload README to quay.io registry
+      if: inputs.readme != '' && inputs.quay_application_token != ''
+      env:
+        QUAY_API_TOKEN: ${{ inputs.quay_application_token }}
+        IMAGE_NAME: ${{ inputs.image_name}}
+        REGISTRY_NAMESPACE: ${{ inputs.registry_namespace }}
+        README_PATH: ${{ inputs.readme }}
+      run: python update_quay_description.py
+      shell: bash
 
     - name: Print image url
       if: steps.check_exclude_file.outputs.files_exists == 'false'
