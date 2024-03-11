@@ -134,6 +134,10 @@ runs:
         username: ${{ inputs.registry_username }}
         password: ${{ inputs.registry_token }}
 
+    - name: Setup python
+      if: inputs.readme != '' && inputs.quay_application_token != ''
+      uses: actions/setup-python@v5
+
     - name: Upload README to quay.io registry
       if: inputs.readme != '' && inputs.quay_application_token != ''
       env:
