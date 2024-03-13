@@ -141,8 +141,8 @@ runs:
         IMAGE_NAME: ${{ inputs.image_name}}
         REGISTRY_NAMESPACE: ${{ inputs.registry_namespace }}
         README_PATH: ${{ inputs.readme }}
-      run: python update_quay_description.py
-      shell: bash
+      run: update_quay_description.py
+      shell: python
 
     - name: Print image url
       if: steps.check_exclude_file.outputs.files_exists == 'false'
