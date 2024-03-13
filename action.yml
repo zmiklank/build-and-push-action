@@ -134,6 +134,9 @@ runs:
         username: ${{ inputs.registry_username }}
         password: ${{ inputs.registry_token }}
 
+    - name: Add action path to path, so that local files are accessible
+      run: echo "${{ github.action_path }}" >> "$GITHUB_PATH"
+
     - name: Upload README to quay.io registry
       if: inputs.readme != '' && inputs.quay_application_token != ''
       env:
