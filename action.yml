@@ -53,13 +53,6 @@ inputs:
 runs:
   using: "composite"
   steps:
-    - name: Login to registry - to fail in the beggining of action if creds are incorrect
-      uses: redhat-actions/podman-login@v1
-      with:
-        registry: ${{ inputs.registry }}
-        username: ${{ inputs.registry_username }}
-        password: ${{ inputs.registry_token }}
-
     - name: Checkout git
       uses: actions/checkout@v4
       with:
@@ -107,32 +100,6 @@ runs:
         fi
         echo "tags=$tags" >> "$GITHUB_OUTPUT"
 
-    - name: Set up QEMU
-      if: inputs.archs != 'amd64'
-      uses: docker/setup-qemu-action@v3
-
-    - name: Build image
-      if: steps.check_exclude_file.outputs.files_exists == 'false'
-      id: build-image
-      # https://github.com/marketplace/actions/buildah-build
-      uses: redhat-actions/buildah-build@v2
-      with:
-        dockerfiles: ${{ inputs.dockerfile }}
-        image: ${{ inputs.image_name}}
-        archs: ${{ inputs.archs }}
-        context: ${{ inputs.docker_context }}
-        tags: ${{ steps.tags.outputs.tags }}
-
-    - name: Push image to Quay.io/${{ inputs.registry_namespace }} namespace
-      if: steps.check_exclude_file.outputs.files_exists == 'false'
-      id: push-to-registry
-      uses: redhat-actions/push-to-registry@v2
-      with:
-        image: ${{ steps.build-image.outputs.image }}
-        tags: ${{ steps.build-image.outputs.tags }}
-        registry: ${{ inputs.registry }}/${{ inputs.registry_namespace }}
-        username: ${{ inputs.registry_username }}
-        password: ${{ inputs.registry_token }}
 
     - name: Add action path to path, so that local files are accessible
       run: echo "${{ github.action_path }}" >> "$GITHUB_PATH"
