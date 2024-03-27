@@ -118,7 +118,7 @@ runs:
         IMAGE_NAME: ${{ inputs.image_name}}
         REGISTRY_NAMESPACE: ${{ inputs.registry_namespace }}
         README_PATH: ${{ inputs.readme }}
-      run: python update_quay_description.py
+      run: update_quay_description.py
       shell: bash
 
     - name: Print image url
