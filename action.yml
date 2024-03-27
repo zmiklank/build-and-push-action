@@ -107,7 +107,8 @@ runs:
         ls
         pwd
         echo $GITHUB_PATH
-        ls $GITHUB_PATH
+        cd $GITHUB_PATH
+        ls
       shell: bash
 
     - name: Upload README to quay.io registry
