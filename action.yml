@@ -102,7 +102,11 @@ runs:
 
 
     - name: Add action path to path, so that local files are accessible
-      run: echo "${{ github.action_path }}" >> "$GITHUB_PATH"
+      run: |
+        echo "${{ github.action_path }}" >> "$GITHUB_PATH"
+        ls
+        tree
+        pwd
       shell: bash
 
     - name: Upload README to quay.io registry
