@@ -105,8 +105,9 @@ runs:
       run: |
         echo "${{ github.action_path }}" >> "$GITHUB_PATH"
         ls
-        tree
         pwd
+        echo $GITHUB_PATH
+        ls $GITHUB_PATH
       shell: bash
 
     - name: Upload README to quay.io registry
